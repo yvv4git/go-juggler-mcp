@@ -18,19 +18,21 @@ type toolDef struct {
 
 // Handler wires the juggler browser client into an MCP server.
 type Handler struct {
-	client  ports.BrowserClient
-	session string
-	log     *zap.Logger
+	client   ports.BrowserClient
+	fs       ports.Filesystem
+	session  string
+	log      *zap.Logger
 }
 
 // New creates a Handler. An empty session generates a unique key at startup.
-func New(client ports.BrowserClient, session string, log *zap.Logger) *Handler {
+func New(client ports.BrowserClient, fs ports.Filesystem, session string, log *zap.Logger) *Handler {
 	if session == "" {
 		session = fmt.Sprintf("mcp-%d", time.Now().UnixNano())
 	}
 
 	return &Handler{
 		client:  client,
+		fs:      fs,
 		session: session,
 		log:     log,
 	}

@@ -57,6 +57,9 @@ opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with j
 # Snapshot: page structure with element refs
 opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, take a snapshot, and summarize the page structure: main blocks, headings, navigation, and the first 10 clickable elements with their refs"
 
+# Screenshot
+opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, then take a screenshot and save it to /tmp/rutube.png"
+
 # Navigation: history back / forward / refresh
 opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, navigate to https://google.com, go back, go forward, refresh, then show the current URL and the stats for that tab"
 
@@ -83,11 +86,17 @@ opencode run -m "opencode/deepseek-v4-flash-free" "Open https://pixelscan.net/bo
 
 # End-to-end scenario
 opencode run -m "opencode/deepseek-v4-flash-free" "Use juggler to: open https://rutube.ru, snapshot the page, click the search icon, type 'news' in the search box, press Enter, wait for results, then evaluate document.title and extract the top 5 result titles"
+
+# Anti bot check
+opencode run -m "opencode/deepseek-v4-flash-free" "Open https://pixelscan.net/bot-check with juggler, wait for the checks to finish, then tell me the verdict: are we detected as a bot or not, and what is the trust score?"
 ```
 
 Note: `screenshot` returns a base64 image inside the MCP tool result; it is not
 saved to disk. Only use it with a vision-capable model, otherwise the image is
-discarded after the response.
+discarded after the response. Pass the `path` argument (e.g. `path: "/tmp/page.png"`)
+to save the file on the server machine instead; combined with `format`,
+`quality` and `max_width` it lets you control the output (JPEG, quality 1-100,
+downscale width).
 
 ## Configuration
 
@@ -128,7 +137,7 @@ override it.
 | `forward`             | Navigate forward in history                          |
 | `refresh`             | Reload the current page                              |
 | `links`               | List all links on the page with pagination           |
-| `screenshot`          | Take a PNG screenshot (page or viewport)             |
+| `screenshot`          | Take a screenshot (PNG/JPEG); optionally save to a file on the server |
 | `evaluate`            | Run arbitrary JavaScript in the page context         |
 | `network_requests`    | Get all loaded resources                             |
 | `stats`               | Get tab state (URL, visited URLs, refs)              |

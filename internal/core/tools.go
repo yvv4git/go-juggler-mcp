@@ -443,13 +443,29 @@ func (h *Handler) linksTool() toolDef {
 
 func (h *Handler) screenshotTool() toolDef {
 	tool := mcp.NewTool("screenshot",
-		mcp.WithDescription("Take a PNG screenshot of the page or full page"),
+		mcp.WithDescription("Take a screenshot of the page or full page. Set path to save the file to disk on the MCP server machine; otherwise the image is returned to the client as base64"),
 		mcp.WithString("tab_id",
 			mcp.Required(),
 			mcp.Description("Tab identifier returned by open_tab"),
 		),
 		mcp.WithBoolean("full_page",
 			mcp.Description("Capture the full page instead of the viewport"),
+		),
+		mcp.WithString("path",
+			mcp.Description("File path to save the screenshot to (e.g. /tmp/page.png). Writes on the server machine"),
+		),
+		mcp.WithString("format",
+			mcp.Description("Output format"),
+			mcp.Enum("png", "jpeg"),
+		),
+		mcp.WithInteger("quality",
+			mcp.Description("JPEG quality 1-100 (default 85)"),
+			mcp.Min(1),
+			mcp.Max(100),
+		),
+		mcp.WithInteger("max_width",
+			mcp.Description("Downscale to this width in pixels if the screenshot is wider"),
+			mcp.Min(1),
 		),
 		mcp.WithString("session",
 			mcp.Description("Juggler session key. Defaults to the server session"),
@@ -463,18 +479,52 @@ func (h *Handler) screenshotTool() toolDef {
 		}
 
 		fullPage := req.GetBool("full_page", false)
+		path := req.GetString("path", "")
+		format := req.GetString("format", formatPNG)
+		quality := req.GetInt("quality", 85)
+		maxWidth := req.GetInt("max_width", 0)
 
-		h.log.Debug("screenshot", zap.String("tab", id), zap.Bool("full_page", fullPage))
+		h.log.Debug("screenshot",
+			zap.String("tab", id),
+			zap.Bool("full_page", fullPage),
+			zap.String("path", path),
+			zap.String("format", format),
+			zap.Int("quality", quality),
+			zap.Int("max_width", maxWidth),
+		)
 
 		png, err := h.client.Screenshot(ctx, id, h.sessionOf(req), fullPage)
 		if err != nil {
 			return wrapErr(err)
 		}
 
+		data, mime, err := processImage(png, format, quality, maxWidth)
+		if err != nil {
+			return wrapErr(err)
+		}
+
+		if path != "" {
+			if err := h.fs.Save(path, data); err != nil {
+				return wrapErr(err)
+			}
+
+			res, err := mcp.NewToolResultJSON(map[string]any{
+				"saved_to":   path,
+				"size_bytes": len(data),
+				"format":     format,
+				"mime":       mime,
+			})
+			if err != nil {
+				return wrapErr(err)
+			}
+
+			return res, nil
+		}
+
 		return mcp.NewToolResultImage(
-			fmt.Sprintf("Screenshot of tab %s (%d bytes)", id, len(png)),
-			base64.StdEncoding.EncodeToString(png),
-			"image/png",
+			fmt.Sprintf("Screenshot of tab %s (%d bytes)", id, len(data)),
+			base64.StdEncoding.EncodeToString(data),
+			mime,
 		), nil
 	}}
 }

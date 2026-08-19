@@ -12,6 +12,7 @@ import (
 
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
+	"github.com/yvv4git/go-juggler-mcp/internal/adaptors/fs"
 	"github.com/yvv4git/go-juggler-mcp/internal/adaptors/juggler"
 	"github.com/yvv4git/go-juggler-mcp/internal/config"
 	mcpconfig "github.com/yvv4git/go-juggler-mcp/internal/config/mcp"
@@ -113,7 +114,8 @@ func serve(cmd *cobra.Command, _ []string) error {
 	)
 
 	client := juggler.NewClient(addr)
-	handler := core.New(client, session, log)
+	filesystem := fs.New()
+	handler := core.New(client, filesystem, session, log)
 	mcpServer := handler.MCPServer()
 
 	switch config.Transport(transport) {
