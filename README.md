@@ -182,27 +182,27 @@ opencode run -m "opencode/deepseek-v4-flash-free" "Use juggler to: open https://
 
 ## Tools
 
-| Tool                  | Description                                          |
-|-----------------------|------------------------------------------------------|
-| `health`              | Check browser status (engine, connection)            |
-| `open_tab`            | Open a new tab and navigate to a URL                 |
-| `navigate`            | Load a URL in an existing tab                        |
-| `snapshot`            | Get the ARIA tree of the page (element refs)         |
-| `click`               | Click an element by ref or CSS selector              |
-| `type`                | Fill an input field by ref or selector               |
-| `press`               | Press a keyboard key (Enter, Tab, Escape, etc.)      |
-| `scroll`              | Scroll the page up/down by N pixels                  |
-| `back`                | Navigate back in history                             |
-| `forward`             | Navigate forward in history                          |
-| `refresh`             | Reload the current page                              |
-| `links`               | List all links on the page with pagination           |
-| `screenshot`          | Take a screenshot (PNG/JPEG); optionally save to a file on the server |
-| `evaluate`            | Run arbitrary JavaScript in the page context         |
-| `network_requests`    | Get all loaded resources                             |
-| `stats`               | Get tab state (URL, visited URLs, refs)              |
-| `list_tabs`           | List all tabs in a session                           |
-| `close_tab`           | Close a tab                                          |
-| `close_session`       | Destroy a session and all its tabs                   |
+| Tool               | Description                                                           |
+|--------------------|-----------------------------------------------------------------------|
+| `health`           | Check browser status (engine, connection)                             |
+| `open_tab`         | Open a new tab and navigate to a URL                                  |
+| `navigate`         | Load a URL in an existing tab                                         |
+| `snapshot`         | Get the ARIA tree of the page (element refs)                          |
+| `click`            | Click an element by ref or CSS selector                               |
+| `type`             | Fill an input field by ref or selector                                |
+| `press`            | Press a keyboard key (Enter, Tab, Escape, etc.)                       |
+| `scroll`           | Scroll the page up/down by N pixels                                   |
+| `back`             | Navigate back in history                                              |
+| `forward`          | Navigate forward in history                                           |
+| `refresh`          | Reload the current page                                               |
+| `links`            | List all links on the page with pagination                            |
+| `screenshot`       | Take a screenshot (PNG/JPEG); optionally save to a file on the server |
+| `evaluate`         | Run arbitrary JavaScript in the page context                          |
+| `network_requests` | Get all loaded resources                                              |
+| `stats`            | Get tab state (URL, visited URLs, refs)                               |
+| `list_tabs`        | List all tabs in a session                                            |
+| `close_tab`        | Close a tab                                                           |
+| `close_session`    | Destroy a session and all its tabs                                    |
 
 ## Configuration
 
