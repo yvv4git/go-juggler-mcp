@@ -1,5 +1,7 @@
 # go-juggler-mcp
 
+![Juggler MCP logo](./assets/logo.jpeg)
+
 MCP-compatible server that lets you control a browser programmatically via the
 [Juggler](https://github.com/yvv4git/go-juggler) protocol. It exposes browser
 automation as MCP tools, so any MCP client (opencode, Claude Desktop, Cursor,
@@ -59,6 +61,8 @@ opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with j
 
 # Screenshot
 opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, then take a screenshot and save it to /tmp/rutube.png"
+opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, take a screenshot, save it to /tmp/rutube.jpg with format jpeg, quality 70 and max_width 1280"
+opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, take a full-page screenshot and save it to /tmp/rutube-full.png"
 
 # Navigation: history back / forward / refresh
 opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, navigate to https://google.com, go back, go forward, refresh, then show the current URL and the stats for that tab"
@@ -73,7 +77,7 @@ opencode run -m "opencode/deepseek-v4-flash-free" "Open https://www.google.com w
 opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, snapshot, click the first video element by its ref, wait, then evaluate document.title"
 
 # Scroll and collect links with pagination
-opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, scroll down 3000px, then list all links on the page with limit 20"
+opencode run -m "opencode/deepseek-v4-flash-free" "Open https://youtube.ru with juggler, scroll down 3000px, then list all links on the page with limit 20"
 
 # Extract data with evaluate (no screenshots needed)
 opencode run -m "opencode/deepseek-v4-flash-free" "Open https://rutube.ru with juggler, then use evaluate to return a JSON object with: page title, meta description, number of images, number of links, and performance metrics (page load time)"
@@ -165,3 +169,13 @@ go-juggler-mcp/
 ## License
 
 MIT, see [LICENSE](LICENSE). See [NOTICE](NOTICE) for attribution.
+
+<p align="center">
+  <a href="https://tonviewer.com/UQCcbp-mue-7HTjDNQ_ZrKtg-tUxIFu817APmItjXasiBGP3">
+    <img src="https://img.shields.io/badge/Buy%20me%20a%20TON-0098EA?style=for-the-badge">
+  </a>
+</p>
+
+<p align="center">
+  If this tool helps you, consider buying me a coffee! ☕
+</p>
