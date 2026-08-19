@@ -14,63 +14,24 @@ import (
 	"github.com/mark3labs/mcp-go/mcptest"
 	"github.com/yvv4git/go-juggler-mcp/internal/adaptors/fs"
 	"github.com/yvv4git/go-juggler/browser"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
-type mockClient struct{}
+func newMockBrowserClient(t *testing.T) *MockBrowserClient {
+	t.Helper()
 
-func (mockClient) Health(ctx context.Context) (*browser.HealthResponse, error) {
-	return &browser.HealthResponse{OK: true, Engine: "camoufox", Sessions: 1, BrowserConnected: true}, nil
-}
+	ctrl := gomock.NewController(t)
 
-func (mockClient) OpenTab(ctx context.Context, sessionKey, url string) (*browser.TabResponse, error) {
-	return &browser.TabResponse{TabID: "tab-1", URL: url}, nil
+	return NewMockBrowserClient(ctrl)
 }
 
-func (mockClient) Navigate(ctx context.Context, tabID, sessionKey, url string) error { return nil }
-func (mockClient) Snapshot(ctx context.Context, tabID, sessionKey string) (*browser.SnapshotResponse, error) {
-	return &browser.SnapshotResponse{URL: "http://example.com", Snapshot: "snapshot", RefsCount: 1}, nil
-}
-func (mockClient) CloseTab(ctx context.Context, tabID, sessionKey string) error { return nil }
-func (mockClient) CloseSession(ctx context.Context, sessionKey string) error    { return nil }
-func (mockClient) Click(ctx context.Context, tabID, sessionKey, ref, selector string) error {
-	return nil
-}
-func (mockClient) Type(ctx context.Context, tabID, sessionKey, ref, selector, text string) error {
-	return nil
-}
-func (mockClient) Press(ctx context.Context, tabID, sessionKey, key string) error { return nil }
-func (mockClient) Scroll(ctx context.Context, tabID, sessionKey, direction string, amount int) error {
-	return nil
-}
-func (mockClient) Back(ctx context.Context, tabID, sessionKey string) error    { return nil }
-func (mockClient) Forward(ctx context.Context, tabID, sessionKey string) error { return nil }
-func (mockClient) Refresh(ctx context.Context, tabID, sessionKey string) error { return nil }
-func (mockClient) Links(ctx context.Context, tabID, sessionKey string, limit, offset int) (*browser.LinksResponse, error) {
-	return &browser.LinksResponse{}, nil
-}
-func (mockClient) Screenshot(ctx context.Context, tabID, sessionKey string, fullPage bool) ([]byte, error) {
-	return testPNG(400, 300), nil
-}
-func (mockClient) Evaluate(ctx context.Context, tabID, sessionKey, expression string) (*browser.EvaluateResponse, error) {
-	return &browser.EvaluateResponse{OK: true, Result: "ok"}, nil
-}
-func (mockClient) NetworkRequests(ctx context.Context, tabID, sessionKey string) ([]browser.ResourceEntry, error) {
-	return []browser.ResourceEntry{{Name: "http://example.com", Type: "navigation", Status: 200}}, nil
-}
-func (mockClient) Stats(ctx context.Context, tabID, sessionKey string) (*browser.TabStats, error) {
-	return &browser.TabStats{TabID: tabID, URL: "http://example.com"}, nil
-}
-func (mockClient) ListTabs(ctx context.Context, sessionKey string) (*browser.ListTabsResponse, error) {
-	return &browser.ListTabsResponse{Running: true, Tabs: []browser.TabInfo{{TabID: "tab-1", URL: "http://example.com"}}}, nil
-}
-
-func newTestHandler(t *testing.T) *Handler {
+func newTestHandler(t *testing.T, browser *MockBrowserClient) *Handler {
 	t.Helper()
 
 	log := zap.NewNop()
 
-	return New(mockClient{}, fs.New(), "test-session", log)
+	return New(browser, fs.New(), "test-session", log)
 }
 
 // testPNG returns a valid solid-color PNG of the given dimensions.
@@ -87,7 +48,7 @@ func testPNG(width, height int) []byte {
 }
 
 func TestToolsRegistered(t *testing.T) {
-	h := newTestHandler(t)
+	h := newTestHandler(t, newMockBrowserClient(t))
 
 	s := mcptest.NewUnstartedServer(t)
 	for _, td := range h.tools() {
@@ -109,7 +70,12 @@ func TestToolsRegistered(t *testing.T) {
 }
 
 func TestOpenTabTool(t *testing.T) {
-	h := newTestHandler(t)
+	client := newMockBrowserClient(t)
+	client.EXPECT().
+		OpenTab(gomock.Any(), "test-session", "http://example.com").
+		Return(&browser.TabResponse{TabID: "tab-1", URL: "http://example.com"}, nil)
+
+	h := newTestHandler(t, client)
 
 	s := mcptest.NewUnstartedServer(t)
 	s.AddTool(h.tools()[1].tool, h.tools()[1].handler)
@@ -137,8 +103,10 @@ func TestOpenTabTool(t *testing.T) {
 	}
 }
 
-func TestScreenshotToolImageContent(t *testing.T) {
-	h := newTestHandler(t)
+func newScreenshotTestServer(t *testing.T, client *MockBrowserClient) *mcptest.Server {
+	t.Helper()
+
+	h := newTestHandler(t, client)
 
 	s := mcptest.NewUnstartedServer(t)
 	for _, td := range h.tools() {
@@ -150,7 +118,22 @@ func TestScreenshotToolImageContent(t *testing.T) {
 	if err := s.Start(context.Background()); err != nil {
 		t.Fatalf("start server: %v", err)
 	}
-	defer s.Close()
+	t.Cleanup(s.Close)
+
+	return s
+}
+
+func expectScreenshot(client *MockBrowserClient) {
+	client.EXPECT().
+		Screenshot(gomock.Any(), "tab-1", "test-session", false).
+		Return(testPNG(400, 300), nil)
+}
+
+func TestScreenshotToolImageContent(t *testing.T) {
+	client := newMockBrowserClient(t)
+	expectScreenshot(client)
+
+	s := newScreenshotTestServer(t, client)
 
 	res, err := s.Client().CallTool(context.Background(), mcp.CallToolRequest{
 		Params: mcp.CallToolParams{
@@ -178,19 +161,10 @@ func TestScreenshotToolImageContent(t *testing.T) {
 }
 
 func TestScreenshotToolJPEGContent(t *testing.T) {
-	h := newTestHandler(t)
+	client := newMockBrowserClient(t)
+	expectScreenshot(client)
 
-	s := mcptest.NewUnstartedServer(t)
-	for _, td := range h.tools() {
-		if td.tool.Name == "screenshot" {
-			s.AddTool(td.tool, td.handler)
-		}
-	}
-
-	if err := s.Start(context.Background()); err != nil {
-		t.Fatalf("start server: %v", err)
-	}
-	defer s.Close()
+	s := newScreenshotTestServer(t, client)
 
 	res, err := s.Client().CallTool(context.Background(), mcp.CallToolRequest{
 		Params: mcp.CallToolParams{
@@ -218,19 +192,10 @@ func TestScreenshotToolJPEGContent(t *testing.T) {
 }
 
 func TestScreenshotToolSaveToDisk(t *testing.T) {
-	h := newTestHandler(t)
+	client := newMockBrowserClient(t)
+	expectScreenshot(client)
 
-	s := mcptest.NewUnstartedServer(t)
-	for _, td := range h.tools() {
-		if td.tool.Name == "screenshot" {
-			s.AddTool(td.tool, td.handler)
-		}
-	}
-
-	if err := s.Start(context.Background()); err != nil {
-		t.Fatalf("start server: %v", err)
-	}
-	defer s.Close()
+	s := newScreenshotTestServer(t, client)
 
 	path := filepath.Join(t.TempDir(), "shots", "page.png")
 	res, err := s.Client().CallTool(context.Background(), mcp.CallToolRequest{

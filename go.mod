@@ -8,6 +8,7 @@ require (
 	github.com/mark3labs/mcp-go v0.58.0
 	github.com/spf13/cobra v1.10.2
 	github.com/yvv4git/go-juggler v1.0.0
+	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.28.0
 	golang.org/x/image v0.25.0
 )
@@ -23,7 +24,10 @@ require (
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
+	golang.org/x/mod v0.27.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/tools v0.36.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 )
