@@ -546,7 +546,7 @@ func (h *Handler) networkRequestsTool() toolDef {
 			return wrapErr(err)
 		}
 
-		return mcp.NewToolResultJSON(res)
+		return mcp.NewToolResultJSON(map[string]any{"requests": res})
 	}}
 }
 
