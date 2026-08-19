@@ -1,0 +1,15 @@
+[log]
+level = "info"
+
+[serve]
+# camofox-browser REST API endpoint.
+addr = "http://localhost:9377"
+
+# Juggler session key. Leave empty to auto-generate a unique one.
+session = ""
+
+# MCP transport: "stdio" (default) or "http".
+transport = "stdio"
+
+# Listen address used when transport = "http".
+http_addr = ":8080"
